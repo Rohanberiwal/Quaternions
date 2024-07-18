@@ -1,6 +1,6 @@
 # Quaternion Blacklist Handling
 
-This repository addresses the issue of handling operations between SymPy's `Quaternion` class and other unknown types by introducing a blacklist mechanism. This allows operations like addition, subtraction, multiplication, and division to gracefully handle cases where the operand type is not supported.
+This repository addresses the issue of handling operations between SymPy's `Quaternion` class and other unknown types by introducing a blacklist mechanism. This allows operations like addition, subtraction, multiplication, and division to gracefully handle cases where the operand type is not supported.This repository officially clears the patch #26355 of Sympy's issue list. 
 
 ## Overview
 
