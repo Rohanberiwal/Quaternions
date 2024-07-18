@@ -1,91 +1,90 @@
-from sympy import Quaternion
+from sympy import Quaternion, core
 
-class NotImplQuaternion:
-    def __init__(self, operation):
-        self.operation = operation
-    
-    def __str__(self):
-        return f"One of the quaternions is not implemented for {self.operation}"
+Quaternion.Blacklist = []
+def dummy_add(self, other):
+    if type(other) in Quaternion.Blacklist:
+        return NotImplemented
+    else:
+        return self.add(other)
 
-class MyQuaternion:
-    Blacklist = []
+Quaternion.__add__ = dummy_add
 
-    def __init__(self, a=0, b=0, c=0, d=0):
-        try:
-            self.quaternion = Quaternion(a, b, c, d)
-        except Exception as e:
-            print("An error occurred while initializing MyQuaternion:", e)
+# Modify __sub__ method
+def dummy_sub(self, other):
+    if type(other) in Quaternion.Blacklist:
+        return NotImplemented
+    else:
+        return self.add(other * -1)
 
-    def __add__(self, other):
-        try:
-            if type(other) in MyQuaternion.Blacklist:
-                return NotImplemented
-            elif isinstance(other, (int, float)):
-                return NotImplQuaternion("addition")
-            else:
-                result = self.quaternion + other.quaternion
-                return MyQuaternion(*result.args)
-        except Exception as e:
-            print("An error occurred during addition:", e)
+Quaternion.__sub__ = dummy_sub
 
-    def __sub__(self, other):
-        try:
-            if type(other) in MyQuaternion.Blacklist:
-                return NotImplemented
-            elif isinstance(other, (int, float)):
-                return NotImplQuaternion("subtraction")
-            else:
-                result = self.quaternion - other.quaternion
-                return MyQuaternion(*result.args)
-        except Exception as e:
-            print("An error occurred during subtraction:", e)
+# Modify __mul__ method
+def dummy_mul(self, other):
+    if type(other) in Quaternion.Blacklist:
+        return NotImplemented
+    else:
+        return self._generic_mul(self, core.sympify(other, strict=True))
 
-    def __mul__(self, other):
-        try:
-            if type(other) in MyQuaternion.Blacklist:
-                return NotImplemented
-            elif isinstance(other, (int, float)):
-                return NotImplQuaternion("multiplication")
-            else:
-                result = self.quaternion * other.quaternion
-                return MyQuaternion(*result.args)
-        except Exception as e:
-            print("An error occurred during multiplication:", e)
+Quaternion.__mul__ = dummy_mul
 
-    def __truediv__(self, other):
-        try:
-            if type(other) in MyQuaternion.Blacklist:
-                return NotImplemented
-            elif isinstance(other, (int, float)):
-                return NotImplQuaternion("division")
-            else:
-                result = self.quaternion / other.quaternion
-                return MyQuaternion(*result.args)
-        except Exception as e:
-            print("An error occurred during division:", e)
+# Modify __truediv__ method
+def dummy_truediv(self, other):
+    if type(other) in Quaternion.Blacklist:
+        return NotImplemented
+    else:
+        return self * core.sympify(other)**-1
 
-    def __str__(self):
-        real, imag_i, imag_j, imag_k = self.quaternion.args
-        return f"Result of operation: ({real} + {imag_i}*i + {imag_j}*j + {imag_k}*k)"
+Quaternion.__truediv__ = dummy_truediv
 
-q1 = MyQuaternion(1, 2, 3, 4)
-q2 = MyQuaternion(5, 6, 7, 8)
-result_add = q1 + q2
-print("Result of addition:", result_add)
-result_sub = q1 - q2
-print("Result of subtraction:", result_sub)
-result_mul = q1 * q2
-print("Result of multiplication:", result_mul)
-result_div = q1 / q2
-print("Result of division:", result_div)
+#Testing function 
 
-print("Below are the test cases the returns Not implemented")
-regular_number = 5
-result_add = q1 + regular_number
-print("Result of addition:", result_add)
-result_sub = q1 - regular_number
-print("Result of subtraction:", result_sub)
-result_mul = q1 * regular_number
-print("Result of multiplication:", result_mul)
-result_div = q1 / regular_number
-print("Result of division:", result_div)
+class Octonion:
+    def __init__(self, *components):
+        if len(components) != 8:
+            raise ValueError("An Octonion must have exactly 8 components.")
+        self.components = components
+
+    def __repr__(self):
+        return f"Octonion({', '.join(map(str, self.components))})"
+
+
+# Set up the blacklist
+Quaternion.Blacklist = [Octonion]
+
+def test_operations():
+    # Create Quaternions
+    q1 = Quaternion(1, 2, 3, 4)
+    q2 = Quaternion(5, 6, 7, 8)
+
+    # Addition of Quaternions
+    result_add = q1 + q2
+    print("Result of addition:", result_add)
+
+    # Subtraction of Quaternions
+    result_sub = q1 - q2
+    print("Result of subtraction:", result_sub)
+
+    # Multiplication of Quaternions
+    result_mul = q1 * q2
+    print("Result of multiplication:", result_mul)
+
+    # Division of Quaternions
+    result_div = q1 / q2
+    print("Result of division:", result_div)
+
+    # Operation with an unsupported type (Octonion)
+    oct = Octonion(1, 2, 3, 4, 5, 6, 7, 8)
+    result_add_oct = q1.__add__(oct)
+    print("Result of addition with Octonion:", result_add_oct)  # Should print NotImplemented
+
+    result_sub_oct = q1.__sub__(oct)
+    print("Result of subtraction with Octonion:", result_sub_oct)  # Should print NotImplemented
+
+    result_mul_oct = q1.__mul__(oct)
+    print("Result of multiplication with Octonion:", result_mul_oct)  # Should print NotImplemented
+
+    result_div_oct = q1.__truediv__(oct)
+    print("Result of division with Octonion:", result_div_oct)  # Should print NotImplemented
+
+if __name__ == "__main__":
+    test_operations()
